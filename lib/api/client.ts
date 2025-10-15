@@ -1,22 +1,35 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
+import Cookies from 'js-cookie';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const TOKEN_KEY = 'accessToken';
+const REFRESH_TOKEN_KEY = 'refreshToken';
 
 class ApiClient {
   private client: AxiosInstance;
+  private isRefreshing = false;
+  private failedQueue: Array<{
+    resolve: (value?: any) => void;
+    reject: (error?: any) => void;
+  }> = [];
 
   constructor() {
     this.client = axios.create({
-      baseURL: API_BASE_URL,
+      baseURL: API_URL,
+      timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
+    this.setupInterceptors();
+  }
+
+  private setupInterceptors() {
     // Request interceptor
     this.client.interceptors.request.use(
       (config) => {
-        const token = this.getToken();
+        const token = this.getAccessToken();
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
@@ -28,88 +41,131 @@ class ApiClient {
     // Response interceptor
     this.client.interceptors.response.use(
       (response) => response,
-      async (error) => {
-        if (error.response?.status === 401) {
-          // Token expired, try to refresh
-          const refreshed = await this.refreshToken();
-          if (refreshed) {
-            // Retry original request
-            return this.client(error.config);
+      async (error: AxiosError) => {
+        const originalRequest = error.config as AxiosRequestConfig & {
+          _retry?: boolean;
+        };
+
+        // If error is 401 and we haven't retried yet
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          if (this.isRefreshing) {
+            // If already refreshing, queue this request
+            return new Promise((resolve, reject) => {
+              this.failedQueue.push({ resolve, reject });
+            })
+              .then((token) => {
+                if (originalRequest.headers) {
+                  originalRequest.headers.Authorization = `Bearer ${token}`;
+                }
+                return this.client(originalRequest);
+              })
+              .catch((err) => Promise.reject(err));
           }
-          // Redirect to login
-          window.location.href = '/login';
+
+          originalRequest._retry = true;
+          this.isRefreshing = true;
+
+          try {
+            const refreshToken = this.getRefreshToken();
+            if (!refreshToken) {
+              throw new Error('No refresh token available');
+            }
+
+            const response = await axios.post(`${API_URL}/auth/refresh-token`, {
+              refreshToken,
+            });
+
+            const { accessToken, refreshToken: newRefreshToken } = response.data;
+
+            this.setAccessToken(accessToken);
+            this.setRefreshToken(newRefreshToken);
+
+            // Process queued requests
+            this.failedQueue.forEach((prom) => prom.resolve(accessToken));
+            this.failedQueue = [];
+
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            }
+            return this.client(originalRequest);
+          } catch (refreshError) {
+            this.failedQueue.forEach((prom) => prom.reject(refreshError));
+            this.failedQueue = [];
+            this.clearTokens();
+            if (typeof window !== 'undefined') {
+              window.location.href = '/login';
+            }
+            return Promise.reject(refreshError);
+          } finally {
+            this.isRefreshing = false;
+          }
         }
+
         return Promise.reject(error);
       }
     );
   }
 
-  private getToken(): string | null {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('accessToken');
-    }
-    return null;
+  // Token management
+  setAccessToken(token: string) {
+    Cookies.set(TOKEN_KEY, token, { expires: 1 }); // 1 day
   }
 
-  private setToken(token: string): void {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('accessToken', token);
-    }
+  getAccessToken(): string | undefined {
+    return Cookies.get(TOKEN_KEY);
   }
 
-  private getRefreshToken(): string | null {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('refreshToken');
-    }
-    return null;
+  setRefreshToken(token: string) {
+    Cookies.set(REFRESH_TOKEN_KEY, token, { expires: 7 }); // 7 days
   }
 
-  private async refreshToken(): Promise<boolean> {
-    try {
-      const refreshToken = this.getRefreshToken();
-      if (!refreshToken) return false;
-
-      const response = await axios.post(`${API_BASE_URL}/api/auth/refresh-token`, {
-        refreshToken,
-      });
-
-      if (response.data.success) {
-        this.setToken(response.data.data.accessToken);
-        localStorage.setItem('refreshToken', response.data.data.refreshToken);
-        return true;
-      }
-      return false;
-    } catch (error) {
-      return false;
-    }
+  getRefreshToken(): string | undefined {
+    return Cookies.get(REFRESH_TOKEN_KEY);
   }
 
-  public clearTokens(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-    }
+  clearTokens() {
+    Cookies.remove(TOKEN_KEY);
+    Cookies.remove(REFRESH_TOKEN_KEY);
   }
 
-  async get<T>(url: string, config?: AxiosRequestConfig) {
+  // HTTP methods
+  async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.client.get<T>(url, config);
     return response.data;
   }
 
-  async post<T>(url: string, data?: unknown, config?: AxiosRequestConfig) {
+  async post<T>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
     const response = await this.client.post<T>(url, data, config);
     return response.data;
   }
 
-  async put<T>(url: string, data?: unknown, config?: AxiosRequestConfig) {
+  async put<T>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
     const response = await this.client.put<T>(url, data, config);
     return response.data;
   }
 
-  async delete<T>(url: string, config?: AxiosRequestConfig) {
+  async patch<T>(
+    url: string,
+    data?: any,
+    config?: AxiosRequestConfig
+  ): Promise<T> {
+    const response = await this.client.patch<T>(url, data, config);
+    return response.data;
+  }
+
+  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.client.delete<T>(url, config);
     return response.data;
   }
 }
 
 export const apiClient = new ApiClient();
+export default apiClient;

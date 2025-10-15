@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Menu, X, User, LogOut, BookOpen, Award } from 'lucide-react';
 import { useAuthStore } from '@/lib/stores/auth.store';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 
 export function Navbar() {
   const router = useRouter();

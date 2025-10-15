@@ -1,54 +1,20 @@
-// API Response Types
-export interface ApiResponse<T> {
-  success: boolean;
-  message: string;
-  data: T;
-  errors?: string[];
-  statusCode: number;
-}
-
-export interface PaginatedResponse<T> {
-  success: boolean;
-  message: string;
-  data: T[];
-  currentPage: number;
-  pageSize: number;
-  totalPages: number;
-  totalRecords: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-}
-
-// User Types
+// Auth Types
 export interface User {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  fullName: string;
-  phoneNumber?: string;
-  dateOfBirth?: string;
-  profileImageUrl?: string;
-  isActive: boolean;
+  role: UserRole;
   isEmailVerified: boolean;
-  lastLoginDate?: string;
+  profilePicture?: string;
+  bio?: string;
   createdAt: string;
-  roles: string[];
-  permissions: string[];
-  profile?: UserProfile;
 }
 
-export interface UserProfile {
-  bio?: string;
-  address?: string;
-  city?: string;
-  province?: string;
-  postalCode?: string;
-  country?: string;
-  linkedInUrl?: string;
-  websiteUrl?: string;
-  occupation?: string;
-  company?: string;
+export enum UserRole {
+  STUDENT = 'Student',
+  INSTRUCTOR = 'Instructor',
+  ADMIN = 'Admin',
 }
 
 export interface LoginRequest {
@@ -61,13 +27,12 @@ export interface RegisterRequest {
   password: string;
   firstName: string;
   lastName: string;
-  phoneNumber?: string;
+  role?: UserRole;
 }
 
-export interface LoginResponse {
+export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
-  expiresAt: string;
   user: User;
 }
 
@@ -76,40 +41,49 @@ export interface Course {
   id: string;
   title: string;
   slug: string;
+  description: string;
   shortDescription?: string;
-  description?: string;
-  categoryId: string;
-  categoryName?: string;
-  instructorId: string;
-  instructorName?: string;
   thumbnailUrl?: string;
   previewVideoUrl?: string;
-  level: string;
+  price: number;
+  discountPrice?: number;
+  level: CourseLevel;
   language: string;
-  priceThb: number;
-  discountPriceThb?: number;
-  effectivePrice: number;
-  hasDiscount: boolean;
-  duration: number;
+  categoryId: string;
+  category?: Category;
+  instructorId: string;
+  instructor?: User;
   isPublished: boolean;
-  publishedAt?: string;
-  isFeatured: boolean;
+  topics?: Topic[];
+  totalLessons: number;
+  totalDuration: number;
   enrollmentCount: number;
-  averageRating: number;
-  totalRatings: number;
+  rating: number;
+  reviewCount: number;
   createdAt: string;
   updatedAt: string;
-  topics?: CourseTopic[];
 }
 
-export interface CourseTopic {
+export enum CourseLevel {
+  BEGINNER = 'Beginner',
+  INTERMEDIATE = 'Intermediate',
+  ADVANCED = 'Advanced',
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  iconUrl?: string;
+}
+
+export interface Topic {
   id: string;
   courseId: string;
   title: string;
   description?: string;
-  displayOrder: number;
-  duration: number;
-  isActive: boolean;
+  orderIndex: number;
   lessons?: Lesson[];
 }
 
@@ -117,59 +91,58 @@ export interface Lesson {
   id: string;
   topicId: string;
   title: string;
-  content?: string;
+  description?: string;
+  contentType: LessonContentType;
   videoUrl?: string;
+  documentUrl?: string;
+  content?: string;
   duration: number;
-  displayOrder: number;
+  orderIndex: number;
   isFree: boolean;
-  isActive: boolean;
-  resources?: LessonResource[];
+  quizId?: string;
+  quiz?: Quiz;
 }
 
-export interface LessonResource {
-  id: string;
-  title: string;
-  description?: string;
-  resourceType: string;
-  resourceUrl: string;
-  fileSize?: number;
+export enum LessonContentType {
+  VIDEO = 'Video',
+  DOCUMENT = 'Document',
+  TEXT = 'Text',
+  QUIZ = 'Quiz',
 }
 
 export interface Quiz {
   id: string;
-  courseId: string;
-  topicId?: string;
+  lessonId: string;
   title: string;
   description?: string;
   passingScore: number;
   timeLimit?: number;
-  maxAttempts?: number;
-  isActive: boolean;
   questions?: Question[];
 }
 
 export interface Question {
   id: string;
+  quizId: string;
   questionText: string;
-  questionType: string;
-  points: number;
-  explanation?: string;
-  imageUrl?: string;
+  questionType: QuestionType;
+  orderIndex: number;
   options?: QuestionOption[];
+  correctAnswer?: string;
+  points: number;
+}
+
+export enum QuestionType {
+  MULTIPLE_CHOICE = 'MultipleChoice',
+  TRUE_FALSE = 'TrueFalse',
+  SHORT_ANSWER = 'ShortAnswer',
 }
 
 export interface QuestionOption {
   id: string;
+  questionId: string;
   optionText: string;
   isCorrect: boolean;
-}
-
-export interface Category {
-  id: string;
-  name: string;
-  description?: string;
-  iconUrl?: string;
-  courseCount?: number;
+  orderIndex: number;
 }
 
 // Enrollment Types
@@ -177,17 +150,35 @@ export interface Enrollment {
   id: string;
   userId: string;
   courseId: string;
-  enrollmentDate: string;
-  expiryDate?: string;
-  status: string;
-  paymentStatus: string;
-  priceThb: number;
-  paymentMethod?: string;
-  transactionId?: string;
-  lastAccessedAt?: string;
-  completionPercentage: number;
-  isCompleted: boolean;
+  course?: Course;
+  enrolledAt: string;
   completedAt?: string;
+  progress: number;
+  lastAccessedAt?: string;
+  certificateId?: string;
+}
+
+export interface EnrollmentProgress {
+  enrollmentId: string;
+  completedLessons: string[];
+  quizAttempts: QuizAttempt[];
+  overallProgress: number;
+}
+
+export interface QuizAttempt {
+  id: string;
+  quizId: string;
+  userId: string;
+  score: number;
+  passed: boolean;
+  submittedAt: string;
+  answers: QuizAnswer[];
+}
+
+export interface QuizAnswer {
+  questionId: string;
+  answer: string;
+  isCorrect: boolean;
 }
 
 // Payment Types
@@ -195,63 +186,131 @@ export interface Payment {
   id: string;
   userId: string;
   orderId: string;
-  transactionId?: string;
-  paymentMethod: string;
   amount: number;
   currency: string;
-  status: string;
-  description?: string;
-  paymentDate?: string;
+  status: PaymentStatus;
+  paymentMethod: string;
+  transactionId?: string;
+  createdAt: string;
 }
 
-export interface CreateChargeRequest {
+export enum PaymentStatus {
+  PENDING = 'Pending',
+  SUCCESSFUL = 'Successful',
+  FAILED = 'Failed',
+  REFUNDED = 'Refunded',
+}
+
+export interface Order {
+  id: string;
   userId: string;
   courseId: string;
+  course?: Course;
+  totalAmount: number;
+  discountAmount?: number;
+  finalAmount: number;
+  status: OrderStatus;
+  paymentId?: string;
+  createdAt: string;
+}
+
+export enum OrderStatus {
+  PENDING = 'Pending',
+  COMPLETED = 'Completed',
+  CANCELLED = 'Cancelled',
+}
+
+export interface OmiseChargeRequest {
   amount: number;
-  paymentMethod: string;
-  cardToken: string;
+  currency: string;
   description: string;
-  returnUri?: string;
+  returnUri: string;
+  metadata?: Record<string, any>;
 }
 
 // Certificate Types
 export interface Certificate {
   id: string;
-  certificateNumber: string;
   userId: string;
   courseId: string;
-  userFullName: string;
-  courseTitle: string;
-  instructorName: string;
-  completionDate: string;
-  issueDate: string;
-  expiryDate?: string;
-  finalScore?: number;
-  grade?: string;
-  totalHours: number;
+  course?: Course;
+  enrollmentId: string;
   verificationCode: string;
-  status: string;
-  pdfUrl?: string;
-  isPublic: boolean;
+  issuedAt: string;
+  certificateUrl?: string;
+}
+
+// API Response Types
+export interface ApiResponse<T> {
+  data: T;
+  message?: string;
+  success: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+}
+
+export interface ApiError {
+  message: string;
+  errors?: Record<string, string[]>;
+  statusCode: number;
+}
+
+export interface ApiErrorResponse {
+  response?: {
+    data?: {
+      message?: string;
+      errors?: Record<string, string[]>;
+    };
+    status?: number;
+  };
+  message?: string;
+}
+
+// Filter and Search Types
+export interface CourseFilters {
+  categoryId?: string;
+  level?: CourseLevel;
+  minPrice?: number;
+  maxPrice?: number;
+  searchQuery?: string;
+  sortBy?: 'price' | 'rating' | 'popularity' | 'newest';
+  page?: number;
+  pageSize?: number;
 }
 
 // Form Types
-export interface CreateCourseRequest {
+export interface CourseFormData {
   title: string;
+  description: string;
   shortDescription?: string;
-  description?: string;
+  price: number;
+  level: CourseLevel;
+  language: string;
   categoryId: string;
-  instructorId: string;
   thumbnailUrl?: string;
   previewVideoUrl?: string;
-  level: string;
-  language: string;
-  priceThb: number;
-  discountPriceThb?: number;
 }
 
-export interface UpdateCourseRequest extends CreateCourseRequest {
-  metaTitle?: string;
-  metaDescription?: string;
-  metaKeywords?: string;
+export interface TopicFormData {
+  title: string;
+  description?: string;
+  orderIndex: number;
+}
+
+export interface LessonFormData {
+  title: string;
+  description?: string;
+  contentType: LessonContentType;
+  videoUrl?: string;
+  documentUrl?: string;
+  content?: string;
+  duration: number;
+  orderIndex: number;
+  isFree: boolean;
 }
