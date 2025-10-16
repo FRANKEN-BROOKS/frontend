@@ -95,7 +95,7 @@ export default function RegisterPage() {
                   <input
                     {...register('firstName')}
                     type="text"
-                    className="input-field pl-10"
+                    className="input-field pl-10  border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                     placeholder="John"
                   />
                 </div>
@@ -115,7 +115,7 @@ export default function RegisterPage() {
                   <input
                     {...register('lastName')}
                     type="text"
-                    className="input-field pl-10"
+                    className="input-field pl-10  border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                     placeholder="Doe"
                   />
                 </div>
@@ -136,7 +136,7 @@ export default function RegisterPage() {
                 <input
                   {...register('email')}
                   type="email"
-                  className="input-field pl-10"
+                  className="input-field pl-10  border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                   placeholder="you@example.com"
                 />
               </div>
@@ -186,7 +186,7 @@ export default function RegisterPage() {
                 <input
                   {...register('password')}
                   type="password"
-                  className="input-field pl-10"
+                  className="input-field pl-10  border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                   placeholder="••••••••"
                 />
               </div>
@@ -206,7 +206,7 @@ export default function RegisterPage() {
                 <input
                   {...register('confirmPassword')}
                   type="password"
-                  className="input-field pl-10"
+                  className="input-field pl-10  border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                   placeholder="••••••••"
                 />
               </div>

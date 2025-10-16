@@ -1,4 +1,107 @@
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-border: #e5e7eb;
+  --color-input: #e5e7eb;
+  --color-ring: #3b82f6;
+  --color-background: #ffffff;
+  --color-foreground: #000000;
+  /* Add other custom colors */
+}
+
+:root {
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+}
+
+.btn-primary {
+    /* text-white */
+    color: white;
+    
+    /* bg-gradient-to-br from-green-400 to-blue-600 */
+    background: linear-gradient(to bottom right, #4ade80, #2563eb);
+    
+    /* font-medium */
+    font-weight: 500;
+    
+    /* rounded-lg */
+    border-radius: 0.5rem;
+    
+    /* text-sm */
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    
+    /* px-5 */
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    
+    /* py-2.5 */
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+    
+    /* text-center */
+    text-align: center;
+    
+    /* me-2 (margin-inline-end for RTL support) */
+    margin-inline-end: 0.5rem;
+    
+    /* mb-2 */
+    margin-bottom: 0.5rem;
+}
+
+/* dark:focus:ring-green-800 */
+@media (prefers-color-scheme: dark) {
+    .btn-primary:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.5);
+    }
+}
+
+.btn-secondary {
+    /* text-white */
+    color: white;
+    
+    /* bg-gradient-to-br from-green-400 to-blue-600 */
+    background: linear-gradient(to bottom right, #ec4899, #fb923c);
+    
+    /* font-medium */
+    font-weight: 500;
+    
+    /* rounded-lg */
+    border-radius: 0.5rem;
+    
+    /* text-sm */
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    
+    /* px-5 */
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    
+    /* py-2.5 */
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+    
+    /* text-center */
+    text-align: center;
+    
+    /* me-2 (margin-inline-end for RTL support) */
+    margin-inline-end: 0.5rem;
+    
+    /* mb-2 */
+    margin-bottom: 0.5rem;
+}
+
+/* dark:focus:ring-green-800 */
+@media (prefers-color-scheme: dark) {
+    .btn-secondary:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.5);
+    }
+}
 
 @layer base {
   :root {
@@ -13,45 +116,5 @@
       --background-start-rgb: 0, 0, 0;
       --background-end-rgb: 0, 0, 0;
     }
-  }
-
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-white text-gray-900;
-  }
-}
-
-@layer components {
-  .btn-primary {
-    @apply bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-
-  .btn-secondary {
-    @apply bg-gray-200 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-
-  .btn-outline {
-    @apply border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-
-  .input-field {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all;
-  }
-
-  .card {
-    @apply bg-white border border-gray-200 rounded-lg shadow-sm;
-  }
-
-  .container-custom {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
   }
 }

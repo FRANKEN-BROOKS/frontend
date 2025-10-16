@@ -85,7 +85,7 @@ export default function LoginPage() {
                 <input
                   {...register('email')}
                   type="email"
-                  className="input-field pl-10"
+                  className="input-field pl-10  border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                   placeholder="you@example.com"
                 />
               </div>
@@ -108,7 +108,7 @@ export default function LoginPage() {
                 <input
                   {...register('password')}
                   type="password"
-                  className="input-field pl-10"
+                  className="input-field pl-10  border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                   placeholder="••••••••"
                 />
               </div>
@@ -147,7 +147,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full btn-primary py-3 text-lg"
+              className="w-full btn-primary py-3 text-lg text-white bg-gradient-to-br from-green-400 to-blue-600 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
             >
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
@@ -168,7 +168,7 @@ export default function LoginPage() {
             <div className="mt-6">
               <Link
                 href="/register"
-                className="w-full btn-outline flex justify-center py-3"
+                className="w-full btn-outline flex justify-center py-3 btn-secondary"
               >
                 Create an account
               </Link>

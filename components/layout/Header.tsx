@@ -20,7 +20,7 @@ export default function Header() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
-    <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+    <header className="bg-white shadow-sm border-b sticky top-0 z-50 p-4">
       <nav className="container-custom">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
